@@ -1,0 +1,27 @@
+#!/bin/bash -x 
+#SBATCH --job-name="orthofinder"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=200G
+#SBATCH --partition=fatnodes
+#SBATCH --nodelist=dayhoff
+#SBATCH --output=/projects/125-emmer/kostas/scripts/orthofinder_outputs/errors/orthofinder_%j.out
+#SBATCH --error=/projects/125-emmer/kostas/scripts/orthofinder_outputs/errors/orthofinder_%j.err
+############################
+
+
+#module load conda
+
+#eval "$(conda shell.bash.hook)"
+#eval "$(conda shell.bash hook)"
+#conda init bash
+
+#conda activate my_env
+
+WHEAT_DATA=/scratch/125-emmer/kostas/data/proteomes_data_for_orthofinder
+PATH_ORTHO=/projects/125-emmer/kostas/scripts/orthofinder_outputs/OrthoFinder
+
+#orthofinder -t 12 -f $WHEAT_DATA 
+${PATH_ORTHO}/orthofinder -f $WHEAT_DATA 
+
+#conda deactivate

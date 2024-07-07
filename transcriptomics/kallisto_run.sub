@@ -1,0 +1,64 @@
+#/bin/bash -x 
+#SBATCH --job-name="kallisto"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=100G
+#SBATCH --partition=fatnodes
+#SBATCH --nodelist=dayhoff
+#SBATCH --output=/projects/125-emmer/free_threshing/kallisto_output/kallistoWEW_%j.out
+#SBATCH --error=/projects/125-emmer/free_threshing/kallisto_output/kallistoWEW_%j.err
+##################################################################
+
+# Author: Konstantinos Gidiotis 
+# Description: 
+#	This script uses kallisto, to map RNAseq data to the transcriptome reference
+# Prerequisites:
+#	RNAseq data (fastq.gz)
+#	transcriptome of the respective species 
+#	list of the sample names 
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+#module load conda
+
+# Initialize Conda (replace 'bash' with your shell if different)
+conda init bash
+
+# Create and activate Conda environment
+#conda create --name my_env
+eval "$(conda shell.bash hook)"
+conda activate my_env
+
+# Set CONDA_PREFIX
+export CONDA_PREFIX="$CONDA_PREFIX"
+
+#transcriptome=/projects/125-emmer/free_threshing/ref_genomes/Triticum_dicoccoides_transcriptome.fasta
+transcriptome_durum=/projects/125-emmer/free_threshing/ref_genomes/Durum_Svevo_v1_0/GCA_900231445.1_Svevo.v1_rna_from_genomic.fna
+echo "This is the reference genome ${transcriptome_durum}"
+output_dir=/projects/125-emmer/free_threshing/kallisto_output
+echo "This is the output directory: ${output_dir}"
+
+echo "Starts creating index file for reference genome"
+# index the reference genome
+kallisto index -i "${output_dir}/Triticum_turgidum.idx" "${transcriptome_durum}"
+echo "Index file completed"
+
+# the RNAseq reads folder
+input_dir=/projects/125-emmer/free_threshing/RNAseq_glumes/Durum
+echo "This is the input directory ${input_dir}"
+
+# List of sample names
+#samples=("RNAseq.wild.emmer.glumes.wild_1_SRR2084071" "RNAseq.wild.emmer.glumes.wild_2_SRR2084163")
+samples=("RNAseq.Durum.glumes.cultivar_1_SRR2084092" "RNAseq.Durum.glumes.cultivar_2_SRR2084160")
+
+# Iterate over each sample
+for sample in "${samples[@]}"
+do
+    echo "Runs kallisto"
+    # Run Kallisto quantification for each pair of paired-end reads
+    kallisto quant -i "${output_dir}/Triticum_turgidum.idx" -o "${output_dir}/${sample}" --paired \
+                   "${input_dir}/${sample}_pass_1.fastq.gz" "${input_dir}/${sample}_pass_2.fastq.gz"
+    echo "Kallisto for ${sample} is finished"
+done
+
+conda deactivate
