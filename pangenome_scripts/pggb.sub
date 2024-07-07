@@ -1,0 +1,49 @@
+#!/bin/bash -x
+#SBATCH --job-name=pggb
+#SBATCH --partition=fatnodes
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=5
+#SBATCH --mem=10G
+#SBATCH --output=/home/kgidiotis/scripts/errors/pggb_%j.out
+#SBATCH --error=/home/kgidiotis/scripts/errors/pggb_%j.err
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+
+# Initialize Conda (replace 'bash' with your shell if different)
+conda init bash
+
+# Important commnad if in any case the "conda init bash" is not recognized
+eval "$(conda shell.bash hook)"
+
+# Activate the virtual environment 
+conda activate virt_env
+
+# Set CONDA_PREFIX
+export CONDA_PREFIX="$CONDA_PREFIX"
+
+###################################### GFA file generation ###################################
+
+# Merged FASTA file (using cat) between 4 species [Southern - Northern Levant - Zavinta - Renan]
+#merged_fasta=/projects/125-emmer/kostas/outputs_from_scripts/ragtag_output/merged.renan.wew.south.north.inversion.pggb.fasta
+
+merged_fasta=/projects/125-emmer/kostas/outputs_from_scripts/ragtag_output/merged.renan.wew.south.north.inversion.pggb.fasta
+
+# Outout Directory of the pggb output
+output_dir=/projects/125-emmer/kostas/outputs_from_scripts/pggb_output/inversion
+
+# Runs PGGB to generate the graph file (GFA)
+pggb -i $merged_fasta \
+     -o $output_dir \
+     -n 5 \
+     -t 16 \
+     -l 2500 \
+     -p 95 \
+     -s 10000 \
+     -V 'Zavitan:1000' \
+     -M 
+
+#pggb -i in_file.fasta.gz -w 100000 -s 20000 -p 100 -a 70 -n 5 -t 16 -v -L -o out_file
+
+conda deactivate 
+

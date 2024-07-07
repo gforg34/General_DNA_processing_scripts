@@ -1,0 +1,67 @@
+#!/bin/bash -x
+#SBATCH --job-name=variant_graph
+#SBATCH --partition=fatnodes
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=5
+#SBATCH --mem=10G
+#SBATCH --output=/home/kgidiotis/scripts/errors/vg_%j.out
+#SBATCH --error=/home/kgidiotis/scripts/errors/vg_%j.err
+
+# Author: Kostas Gidiotis
+# Description:
+#       This script sets up and utilizes a Conda environment to run the VG toolkit, facilitating the creation of a variation graph (VG) file.
+#       The resulting VG file is intended for use with SequenceTubeMap, aiding in pangenome analysis.
+#       Additionally, this VG file is employed to identify regions enriched with CRISPR targets, enabling the sequencing of specific small regions 
+#       within the Zavitan genome assembly. 
+# Prerequisites:
+#	conda environment (vg and dependencies are downloaded all there)
+#	merged fasta file: include all the sequences/genomes/chromosomes that you want to compare in a common FASTA 
+#	PGGB software outputs or create a vcf using bcftools.
+#		- vcf.gz file 
+
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+
+# Initialize Conda (replace 'bash' with your shell if different)
+conda init bash
+
+# Important commnad if in any case the "conda init bash" is not recognized
+eval "$(conda shell.bash hook)"
+
+# Activate the virtual environment 
+conda activate my_env
+
+# Set CONDA_PREFIX
+export CONDA_PREFIX="$CONDA_PREFIX"
+
+#reference=/projects/125-emmer/kostas/outputs_from_scripts/split_fastas/merged_small_wew_renan_south_north.fa
+#reference=/projects/125-emmer/free_threshing/ref_genomes/Triticum_dicoccoides_v2_1/ref.for.vg.change.name.fasta
+#reference=/projects/125-emmer/kostas/outputs_from_scripts/split_fastas/wew.42.43.fasta
+reference=/projects/125-emmer/free_threshing/ref_genomes/Triticum_dicoccoides_v2_1/GCF_002162155.2_WEW_v2.1_chr2B.inversion.36_46Mbp.fasta
+
+# Outout Directory of the pggb output
+output_dir=/projects/125-emmer/kostas/outputs_from_scripts/pggb_output/inversion
+
+vcf=/projects/125-emmer/kostas/outputs_from_scripts/pggb_output/inversion/merged.renan.wew.south.north.inversion.pggb.fasta.91271c3.417fcdf.c5a0868.smooth.final.Zavitan.vcf
+
+# gzip the vcf gile 
+#bgzip -k $vcf
+
+# create index for vcg file
+#tabix -p vcf $output_dir/merged.renan.wew.south.north.inversion.pggb.fasta.91271c3.417fcdf.c5a0868.smooth.final.Zavitan.vcf.gz
+
+# construct the vg file 
+vg construct -r $reference -v $output_dir/merged.renan.wew.south.north.inversion.pggb.fasta.91271c3.417fcdf.c5a0868.smooth.final.Zavitan.vcf.gz -a -p >$output_dir/merged_inversion_4species.vg
+
+# create gfa file from vg (not necessary) - pggb creates also a gfa 
+#vg view $vcf/merged_42_43.vg > $vcf/merged_42_43.gfa
+
+# index vcf.gz file 
+#vg gbwt -x $output_dir/merged_42_43.vg.xg -o $output_dir/graph.gbwt -v $output_dir/merged.42_43.fasta.5ec6fdc.417fcdf.11fe66b.smooth.final.wew.vcf.gz
+
+conda deactivate
+
+
+
+
