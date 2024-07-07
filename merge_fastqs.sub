@@ -1,0 +1,49 @@
+#!/bin/bash -x
+#SBATCH --job-name="merge_fastas"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=5
+#SBATCH --mem=100G
+#SBATCH --partition=fatnodes
+#SBATCH --output=/scratch/125-emmer/kostas/errors/merge_fastas_%j.out
+#SBATCH --error=/scratch/125-emmer/kostas/errors/merge_fastas_%j.err
+##################################################################
+
+#Author: Konstantinos Gidiotis 
+#Description: 
+#	This script takes two fastq files and converts them to fasta files 
+#	then they merges them using cat 
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+
+# Initialize Conda (replace 'bash' with your shell if different)
+conda init bash
+
+#  Create and activate Conda environment
+#  conda create --name my_env
+source activate my_env
+
+# fastq files from Sothern Levant of Wild Emmer wheat
+FASTQ_PATH=/projects/125-emmer/free_threshing/long_read_south/TTD140/01.Data_result/ 
+
+# Create an empty merged.fasta file
+> "${FASTQ_PATH}/south_merged_fastq.fasta"
+
+# loop through the folders 
+for file in ${FASTQ_PATH}/*fastq.gz; do
+    # extract basename 
+    file_basename=$(basename "$file")
+    
+    echo "Zcat the file and seqtk"
+    # unzip and convert to fasta 
+    zcat "$file" | seqtk seq -A > "$file_basename".fasta
+    
+    echo "Merge the files"
+    # Append the content to the merged.fasta
+    cat "$file_basename".fasta >> "${FASTQ_PATH}/south_merged_fastq.fasta"
+
+done 
+
+
+# deactivate conda 
+conda deactivate 

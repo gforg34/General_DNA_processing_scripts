@@ -1,0 +1,27 @@
+#!/bin/bash -x
+#BATCH --job-name="python"
+#SBATCH --account=kgidiotis
+#SBATCH --partition=all
+#SBATCH --cpus-per-task=3
+#SBATCH --mem=32G
+#SBATCH --output=/home/kgidiotis/errors/python_scripts/py_%j.out
+#SBATCH --error=/home/kgidiotis/errors/python_scripts/py_%j.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=konstantinos.gidiotis@cragenomica.es
+
+# load conda
+module load conda
+
+# activate the "my_env" 
+conda activate my_env 
+#conda activate python-uri
+
+# run the python script 
+python /home/kgidiotis/scripts/parse_sam_chimeric.py
+
+# deactivate the environment 
+conda deactivate
+
+# module unload
+module unload conda
+                                       

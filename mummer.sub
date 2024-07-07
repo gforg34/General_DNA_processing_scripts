@@ -1,0 +1,20 @@
+#!/bin/bash -x
+#SBATCH --job-name=nucmer
+#SBATCH --partition=general
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=5
+#SBATCH --mem=20G
+#SBATCH --output=/home/kgidiotis/scripts/errors/nucmer_%j.out
+#SBATCH --error=/home/kgidiotis/scripts/errors/nucmer_%j.err
+
+
+module load mummer/4.0.0beta2
+
+OUTPATH=/projects/125-emmer/kostas/outputs_from_scripts/mummer_out/wew_south_output
+
+INPATH_south=/projects/125-emmer/kostas/outputs_from_scripts/ragtag_output/south_scafs_unphased_unplaced/south.ragtag.scaffold.chr2B.fasta
+INPATH_wew=/projects/125-emmer/free_threshing/ref_genomes/Triticum_dicoccoides_v2_1/GCF_WEW_v2.1_chromsome2B.fasta
+
+nucmer -l 500 -c 1000 -p nucmer_south $INPATH_south $INPATH_wew
+
+module unload mummer/4.0.0beta2

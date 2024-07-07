@@ -1,0 +1,32 @@
+#!/bin/bash -x 
+#SBATCH --job-name="rsync_move"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=100M
+#SBATCH --partition=general
+#SBATCH --output=/home/kgidiotis/scripts/errors/logs/rsync_%j.out
+#SBATCH --error=/home/kgidiotis/scripts/errors/logs/rsync_%j.err
+
+
+# Source directory containing files to transfer 
+source_directory=/projects/125-emmer/free_threshing/fastqs_Zhou2020/triticum_vavilovii
+
+# Destination directory where files will be moved 
+destination_directory=/scratch/125-emmer/kostas/data/fastqs_file
+
+# Iterate over each file in the source directory
+cd "$source_directory" || exit
+
+# Iterate over each file in the source directory
+for file in *; do
+    # Check if the file is a regular file (not a directory)
+    if [ -f "$file" ]; then
+        # Check if the file already exists in the destination directory
+        if [ ! -e "$destination_directory/$file" ]; then
+            # Transfer the file using rsync
+            rsync -avr --stats --progress "$file" "$destination_directory"
+        else
+            echo "File $file already exists in the destination directory. Skipping..."
+        fi
+    fi
+done

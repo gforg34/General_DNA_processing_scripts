@@ -1,0 +1,71 @@
+#!/bin/bash -x
+#SBATCH --job-name=remove_dups
+#SBATCH --account=kgidiotis
+#SBATCH --output=/home/kgidiotis/minimap_pipeline/errors/picard_remove_dups_%j.out
+#SBATCH --error=/home/kgidiotis/minimap_pipeline/errors/picard_remove_dups_%j.err
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=50G
+#SBATCH --partition=fatnodes
+
+# Author: MSc Kostas Gidiotis
+# Group: Laura Botigue's group 
+# Date: 05-01-2024
+# Description: 
+# 	This script is removing the PCR duplicates from the generated bwa bam files
+# 	*long read sequencing data for Wild Emmer Wheat* 
+# Prerequisites: 
+#	long read sequencing bam files 
+# Output: 
+# 	bam files with PCR duplicates removed 
+#Note:
+# 	Check after you have generated the new bam(PCR dups removed) the flagstats (before - after)
+
+# Load the picard module
+module load picard/2.22.3
+module load samtools
+# Directory path containing the BAM files
+INPUT_DIR=/scratch/125-emmer/free-threshing/long_read_outputs/minimap2_wild_emmer/minimap2_South_I100g
+
+# Path/InputFile manually
+INPUT_FILE=/scratch/125-emmer/free-threshing/long_read_outputs/minimap2_wild_emmer/minimap2_South_I100g/WHPBRVajis20231024-2045_sorted.bam
+
+FILENAME=$(basename -- "$INPUT_FILE")
+FILENAME_NOEXT="${FILENAME%_*}"
+echo $FILENAME_NOEXT
+
+java -jar $PICARDPATH/picard.jar AddOrReplaceReadGroups \
+      I=$INPUT_DIR/${FILENAME_NOEXT}_sorted_dupMarked.bam \
+      O=$INPUT_DIR/${FILENAME_NOEXT}_sorted_dupMarked_RG.bam \
+      RGID=read_group_id \
+      RGLB=LibraryPlaceholder \
+      RGPL=PACBIO_SMRT \
+      RGPU=unit1 \
+      RGSM=$FILENAME \
+VALIDATION_STRINGENCY=SILENT
+
+#LibraryPlaceholder
+# index dupMarked file 
+samtools index -c $INPUT_DIR/${FILENAME_NOEXT}_sorted_dupMarked_RG.bam                                                
+
+java -Xmx32g -jar $PICARDPATH/picard.jar ValidateSamFile I=$INPUT_DIR/${FILENAME_NOEXT}_sorted_dupMarked_RG.bam \
+MODE=SUMMARY VALIDATION_STRINGENCY=SILENT
+
+# Run the picard MarkDuplicates command
+java -Xmx100g -jar $PICARDPATH/picard.jar MarkDuplicates \
+  VALIDATION_STRINGENCY=SILENT \
+  I=$INPUT_DIR/${FILENAME_NOEXT}_sorted_dupMarked_RG.bam \
+  O=$INPUT_DIR/${FILENAME_NOEXT}_sorted_dupRemoved_RG.bam \
+  M=$INPUT_DIR/metrics_${FILENAME_NOEXT}.txt \
+  REMOVE_DUPLICATES=true
+
+samtools index -c $INPUT_DIR/${FILENAME_NOEXT}_sorted_dupRemoved_RG.bam
+
+# unload the module 
+module unload picard/2.22.3	
+module unload samtools
+~                                                                                                                                                                                                                                             
+~                                                                                                                                                                                                                                             
+~                                                                                                                                                                                                                                             
+~                                                                                                                                                                                                                                             
+~                                                                                                                                                                                                                                             
+~                      

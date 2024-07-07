@@ -1,0 +1,19 @@
+#!/bin/bash -x
+#BATCH --job-name=picard_dictionary
+#SBATCH --account=kgidiotis
+#SBATCH --output=/home/kgidiotis/scripts/errors/picard/picard_dictionary_%j.out
+#SBATCH --error=/home/kgidiotis/scripts/errors/picard/picard_dictionary_%j.err
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=30G
+#SBATCH --partition=general
+#SBATCH --time=1:00:00
+
+# Load the picard module
+module load picard/2.22.3
+
+# Run the picard CreateSequenceDictionary command
+java -jar $PICARDPATH/picard.jar CreateSequenceDictionary \
+    R=/projects/125-emmer/free_threshing/ref_genomes/Triticum_dicoccoides_v2_1/GCF_002162155.2_WEW_v2.1_genomic.fna \
+    O=/projects/125-emmer/free_threshing/ref_genomes/Triticum_dicoccoides_v2_1/GCF_002162155.2_WEW_v2.1_genomic.dict
+
+module unload picard/2.22.3

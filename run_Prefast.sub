@@ -1,0 +1,38 @@
+#!/bin/bash -x 
+#SBATCH --job-name=Prefast_2
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=10G
+#SBATCH --partition=fatnodes 
+#SBATCH --output=/projects/125-emmer/free_threshing/fastqs_Zhou2020/errors/prefast_%j.out
+#SBATCH --error=/projects/125-emmer/free_threshing/fastqs_Zhou2020/errors/prefast_%j.err
+
+
+#module load conda
+
+#conda init bash 
+
+#conda activate my_env
+output_directory=/projects/125-emmer/free_threshing/fastqs_Zhou2020/triticum_paleocolchicum
+list=/projects/125-emmer/free_threshing/fastqs_Zhou2020/triticum_paleocolchicum/metadata_paleocolchicum.txt
+path=/projects/125-emmer/kostas/sratoolkit.3.1.0-ubuntu64/bin
+
+# this is to run specific SRAs
+#python Prefast.py
+
+echo "Runs the prefetch"
+# this extracts a list of SRAs (text format) and runs them all 
+${path}/prefetch --max-size 420000000000 -O $output_directory --option-file $list
+
+wait
+
+echo "Runs the fastq-dump"
+# Iterate over .sra files and run fasterq-dump
+find "$output_directory/triticum_paleocolchicum" -type f -name "*.sra" | while read -r file; do
+    echo "${file}"
+    bsub ${path}/fastq-dump --outdir $output_directory/triticum_paleocolchicum --split-3 --gzip -O $output_directory/triticum_turgidum $file
+done
+
+#find $output_directory -name "*.sra" -exec bsub ${path}/fasterq-dump --split-3 --gzip {} \;
+
+#conda deactivate
