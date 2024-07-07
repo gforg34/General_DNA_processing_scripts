@@ -1,0 +1,32 @@
+#bin/bash -x
+#SBATCH --job-name="cutesv"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=5
+#SBATCH --mem=15G
+#SBATCH --partition=fatnodes
+#SBATCH --output=/scratch/125-emmer/kostas/errors/cutesv_%j.out
+#SBATCH --error=/scratch/125-emmer/kostas/errors/cutesv_%j.err
+##################################################################
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+
+# Initialize Conda (replace 'bash' with your shell if different)
+conda init bash
+
+# Create and activate Conda environment
+#conda create --name my_env
+source activate my_env
+
+# Paths
+BAM_FILE="/scratch/125-emmer/free-threshing/long_read_outputs/TTD140_southern/WHPBRVajis20231011-2015_sorted_dupMarked_RG.bam"
+REFERENCE_FA="/projects/125-emmer/Reference_genomes/Triticum_dicoccoides/Triticum_dicoccoides_v2.fasta"
+OUTPUT_VCF="/scratch/125-emmer/free-threshing/long_read_outputs/TTD140_southern/cutesv/my_output.vcf"
+WORK_DIR="/scratch/125-emmer/free-threshing/long_read_outputs/TTD140_southern/cutesv"
+
+#Run cuteSV with the correct parameters
+cuteSV $BAM_FILE $REFERENCE_FA $OUTPUT_VCF $WORK_DIR
+
+# Deactivate Conda environment
+conda deactivate
+
