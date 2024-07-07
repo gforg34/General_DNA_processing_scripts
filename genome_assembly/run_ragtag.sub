@@ -1,0 +1,25 @@
+#!/bin/bash -x
+#SBATCH --job-name="ragtag"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=3
+#SBATCH --mem=50G
+#SBATCH --partition=general
+#SBATCH --output=/home/kgidiotis/scripts/errors/logs/ragtag_%j.out
+#SBATCH --error=/home/kgidiotis/scripts/errors/logs/ragtag_%j.err
+
+BREAD_WHEAT_CHR2B=/projects/125-emmer/free_threshing/chr2B_wheat/Triticum_aestivum_renan.Triticum_aestivum_Renan_v2.1.dna.chromosome.2B.fa
+WILD_EMMER_CHR2B=/projects/125-emmer/free_threshing/chr2B_wheat/Triticum_dicoccoides.WEWSeq_v.2.0.dna.chromosome.2B.fasta
+PATH=/scratch/125-emmer/kostas/output_from_scripts/ragtag_output
+
+module load conda
+
+conda init bash 
+
+conda activate my_env
+
+# make joins and fill gaps in target.fa using sequences from query.fa
+#ragtag.py patch $WILD_EMMER_CHR2B $BREAD_WHEAT_CHR2B  -o $PATH/ragtag_output -w -u -t 4 --aligner minimap2 --mm2-params "-x asm5 -t 4" --fill-only
+
+iragtag.py patch $WILD_EMMER_CHR2B $BREAD_WHEAT_CHR2B -f 1000 --aligner nucmer --nucmer-params '-l 100 -c 500' -o patched > ragtag.out 2> ragtag.err
+
+conda deactivate

@@ -1,0 +1,36 @@
+#!/bin/bash -x 
+#SBATCH --job-name="longstitch"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=200G
+#SBATCH --partition=fatnodes
+#SBATCH --nodelist=dayhoff
+#SBATCH --output=/projects/125-emmer/kostas/scripts/output/longstitch_v2/longstitch_%j.out
+#SBATCH --error=/projects/125-emmer/kostas/scripts/output/longstitch_v2/longstitch_%j.err
+##################################################################
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+#module load conda
+
+# Initialize Conda (replace 'bash' with your shell if different)
+conda init bash
+
+# Create and activate Conda environment
+#conda create --name my_env
+eval "$(conda shell.bash hook)"
+conda activate virt_env
+
+# Set CONDA_PREFIX
+export CONDA_PREFIX="$CONDA_PREFIX"
+
+#REFERENCE=/projects/125-emmer/kostas/scripts/output/longstitch/GCF_002162155.2_WEW_v2.1_genomic
+MERGED_CHR2B_UNSCAFF=/projects/125-emmer/kostas/scripts/output/longstitch_v2/merged_chr2B_unplaced_scaffolds
+READS_MERGED=/projects/125-emmer/kostas/scripts/output/longstitch/merged_fastqs_south_copy
+
+echo "The reads are in $READS_MERGED"
+echo "The merged chr2B and the unplaced scaffolds of Triticum dicoccoides v2 can be found in $MERGED_CHR2B_UNSCAFF"
+
+longstitch tigmint-ntLink-arks draft=merged_chr2B_unplaced_scaffolds reads=merged_fastqs_south_copy t=16 outprefix=longstitch_ref longmap=pb G=11e9 k_ntLink=32 w=100 gap_fill=True
+
+conda deactivate

@@ -1,0 +1,55 @@
+#!/bin/bash -x
+#SBATCH --job-name="inv_gapcloser"
+#SBATCH --account=kgidiotis
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=300G
+#SBATCH --partition=fatnodes
+#SBATCH --nodelist=dayhoff
+#SBATCH --output=/home/kgidiotis/errors/close_gaps/tgsgap_%j.out
+#SBATCH --error=/home/kgidiotis/errors//close_gaps/tgsgap_%j.err
+##################################################################
+
+# Load Conda module (if available)
+module load conda/2-4.3.21
+#module load conda
+
+# Initialize Conda (replace 'bash' with your shell if different)
+# used to initialize the conda shell function within a Bash shell session.
+eval "$(conda shell.bash hook)"
+conda init bash
+
+# Create and activate Conda environment
+#conda create --name my_env
+conda activate my_env
+
+# Set CONDA_PREFIX
+#export CONDA_PREFIX="$CONDA_PREFIX"
+
+# Paths
+READS_MERGED="/projects/125-emmer/free_threshing/long_read_south/TTD140/01.Data_result/merged_fastqs_south.fasta"
+INVERSION="/home/kgidiotis/tgsgapcloser_seqs_input_output/inversion_site_from_wew2_emmer_39_46.fasta"
+OUTPUT="/scratch/125-emmer/kostas/inversion_tgs"
+
+echo "The reads are in $READS_MERGED"
+echo "The INVERSION file  is in $INVERSION"
+echo "$CONDA_PREFIX"
+echo "The output is in $OUTPUT"
+
+# Run cuteSV with the correct parameters
+tgsgapcloser \
+--scaff "$INVERSION" \
+--reads "$READS_MERGED" \
+--output "$OUTPUT/inversion_tgs" \
+--racon "$CONDA_PREFIX/bin/racon" \
+--tgstype pb \
+>/home/kgidiotis/errors/close_gaps/pipeINV.log 2>/home/kgidiotis/errors/close_gaps/pipeINV.err
+
+# Deactivate Conda environment
+conda deactivate
+
+
+                                                                                                                                        
+                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                             
+                                                                                                                                                                              
